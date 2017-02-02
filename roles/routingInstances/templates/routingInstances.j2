@@ -1,0 +1,120 @@
+{# ROUTING-INSTANCES #}
+{% if routingInstance is defined %}
+routing-instances {
+{% for instance in routingInstance %}
+    {{ instance.name }} {
+{% if instance.options is defined %}
+{% for option in instance.options %}
+        {{ option }};
+{% endfor %}
+{% endif %}
+{% if instance.interface is defined %}
+{% for interface in instance.interface %}
+        interface {{ interface }};
+{% endfor %}
+{% endif %}
+{% if instance.routing_options is defined %}
+        routing-options {
+{% for option in instance.routing_options %}
+            {{ option }};
+{% endfor %}
+        }
+{% endif %}
+{% if instance.forwarding_options is defined %}
+        forwarding-options {
+{% for option in instance.forwarding_options %}
+            {{ option.name }} {
+{% if option.serverGroup is defined %}
+                server-group {
+{% for serverGroup in option.serverGroup %}
+                    {{ serverGroup.name }} {
+{% for server in serverGroup.ip_address %}
+                        {{ server }};
+{% endfor %}
+{% endfor %}
+                    }
+                }
+{% endif %}
+{% if option.group is defined %}
+{% for group in option.group %}
+                group {{ group.name }} {
+                    active-server-group {{ group.activeServerGroup }};
+{% if group.interface is defined %}
+{% for interface in group.interface %}
+                    interface {{ interface }};
+{% endfor %}
+{% endif %}
+                }
+{% endfor %}
+{% endif %}
+            }
+{% endfor %}
+        }
+{% endif %}
+{% if instance.protocols is defined %}
+        protocols {
+{% for protocol in instance.protocols %}
+            {{ protocol.type }} {
+{% if protocol.description is defined %}
+                description {{ protocol.description }};
+{% endif %}
+{% if protocol.localAS is defined %}
+                local-as {{ protocol.localAS }};
+{% endif %}
+{% if protocol.group is defined %}
+{% for group in protocol.group %}
+                group {{ group.name }} {
+{% if group.family is defined %}
+                    family {{ group.family.afi }} {
+                        {{ group.family.safi }};
+                    }
+{% endif %}
+{% if group.peerAS is defined %}
+                    peer-as {{ group.peerAS }};
+{% endif %}
+{% for neighbor in group.neighbor %}
+                    neighbor {{ neighbor }};
+{% endfor %}
+                }
+{% endfor %}
+{% endif %}
+{% if protocol.area is defined %}
+{% for area in protocol.area %}
+                {{ area.area }} {
+{% for interface in area.interface %}
+                    interface {{ interface.iface }} {
+                        interface-type {{ interface.type }};
+                    }
+{% endfor %}
+                }
+{% endfor %}
+{% endif %}
+{% if protocol.options is defined %}
+{% for option in protocol.options %}
+                {{ option }};
+{% endfor %}
+{% endif %}
+{% if protocol.interface is defined %}
+{% for interface in protocol.interface %}
+                interface {{ interface.iface }} {
+{% if interface.options is defined %}
+{% for option in interface.options %}
+                    {{ option }};
+{% endfor %}
+{% endif %}
+{% if interface.bfdInterval is defined %}
+                    bfd-liveness-detection {
+                        minimum-interval {{ interface.bfdInterval }};
+                    }
+{% endif %}
+                }
+{% endfor %}
+{% endif %}
+            }
+{% endfor %}
+        }
+    }
+{% endif %}
+{% endfor %}
+}
+{% endif %}

@@ -1,0 +1,5 @@
+---
+- name: building chassis configuration
+  template: >
+    src=chassis.j2
+    dest={{ build_directory }}/02chassis.conf.part

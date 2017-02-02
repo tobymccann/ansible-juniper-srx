@@ -1,0 +1,18 @@
+{# VIRTUAL-CHASSIS #}
+{% if virtual_chassis is defined %}
+virtual-chassis {
+{% if virtual_chassis.options is defined %}
+{% for option in virtual_chassis.options %}
+    {{ option }};
+{% endfor %}
+{% if virtual_chassis.member is defined %}
+{% for member in virtual_chassis.member %}
+    member {{ member.number }} {
+        role {{ member.role }};
+        serial-number {{ member.serial }};
+    }
+{% endfor %}
+{% endif %}
+{% endif %}
+}
+{% endif %}

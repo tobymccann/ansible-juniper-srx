@@ -1,0 +1,15 @@
+protocols:
+  lldp:
+    options:
+      - port-id-subtype interface-name
+    interface:
+      - all
+  ospf:
+    area:
+      - area: 0.0.0.0
+        interface:
+          - iface: ge-0/0/1.0
+            type: p2p
+          - iface: ge-0/0/2.0
+            type: p2p
+    export: REDISTRIBUTE-DIRECT

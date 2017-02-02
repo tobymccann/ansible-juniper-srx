@@ -1,0 +1,7 @@
+applications:
+  - name: microsoft-RDP
+    protocol: tcp
+    destination_port: 3389
+  - name: virl-VPN
+    protocol: udp
+    destination_port: 1194

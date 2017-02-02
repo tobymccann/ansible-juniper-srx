@@ -1,0 +1,21 @@
+---
+- include: build_configuration.yml
+- name: Apply generated configurations
+  hosts: all
+  connection: local
+  gather_facts: no
+  vars:
+    netconf:
+      host: "{{ inventory_hostname }}"
+      username: ansible
+      password: ansible!
+
+  tasks:
+    - name: pushing configuration to device, please wait...
+      junos_config:
+        src: "{{ junos_configuration }}"
+        src_format: text
+        comment: "applied by ansible"
+        provider: "{{ netconf }}"
+        timeout: 300
+      register: result

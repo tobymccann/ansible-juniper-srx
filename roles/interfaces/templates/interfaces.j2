@@ -1,0 +1,46 @@
+{# INTERFACE #}
+interfaces {
+{% if interfaces.physicalSingle is defined %}
+{% for iface in interfaces.physicalSingle %}
+    {{ iface.name }} {
+{% if iface.description is defined %}
+        description {{ iface.description }};
+{% endif %}
+{% if iface.subinterface is defined %}
+{% for subinterface in iface.subinterface %}
+        unit {{ subinterface.unit }} {
+{% if subinterface.family is defined %}
+{% for each in subinterface.family %}
+{% for family, address in each.items() %}
+            family {{ family }} {
+{% if address == 'dhcp-client' %}
+                {{ address }};
+{% else %}
+                address {{ address }};
+{% endif %}
+            }
+{% endfor %}
+{% endfor %}
+{% endif %}
+{% endfor %}
+{% endif %}
+        }
+    }
+{% endfor %}
+{% endif %}
+{% if interfaces.loopback is defined %}
+    lo0 {
+{% for loopback in interfaces.loopback %}
+        unit {{ loopback.unit }} {
+{% for each in loopback.family %}
+{% for family, address in each.items() %}
+            family {{ family }} {
+                address {{ address }};
+            }
+{% endfor %}
+{% endfor %}
+        }
+{% endfor %}
+    }
+{% endif %}
+}

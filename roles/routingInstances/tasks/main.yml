@@ -1,0 +1,5 @@
+---
+- name: building routing-instances configuration
+  template: >
+    src=routingInstances.j2
+    dest={{ build_directory }}/09routingInstances.conf.part

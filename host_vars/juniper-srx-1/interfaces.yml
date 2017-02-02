@@ -1,0 +1,49 @@
+interfaces:
+  physicalSingle:
+    - name: ge-0/0/0
+      description: INTERNET
+      subinterface:
+        - unit: 0
+          family:
+            - inet: dhcp-client
+    - name: ge-0/0/1
+      description: LAN1
+      subinterface:
+        - unit: 0
+          family:
+            - inet: 192.168.1.1/24
+    - name: ge-0/0/2
+      description: LAN2
+      subinterface:
+        - unit: 0
+          family:
+            - inet: 192.168.101.1/24
+    - name: ge-0/0/3
+      description: LAN3
+      subinterface:
+        - unit: 0
+          family:
+            - inet: 192.168.202.0/24
+    - name: ge-0/0/4
+      description: DMZ1
+      subinterface:
+        - unit: 0
+          family:
+            - inet: 192.168.253.1/24
+    - name: ge-0/0/5
+      description: DMZ2
+      subinterface:
+        - unit: 0
+          family:
+            - inet: 192.168.254.1/24
+    - name: ge-0/0/6
+      description: site-to-site-vpn
+      subinterface:
+        - unit: 0
+          family:
+            - inet: 100.0.0.1/30
+  loopback:
+    - unit: 0
+      family:
+        - inet: 172.16.20.1/32
+        - iso: 49.5100.0101.1620.0001.00

@@ -1,0 +1,3 @@
+routing_options:
+  nonstop_routing: False
+  router_id: 172.16.20.1

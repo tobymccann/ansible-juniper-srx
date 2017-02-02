@@ -1,0 +1,10 @@
+---
+- name: build temporary directories to hold configuration as thy're being constructued
+  hosts: all
+  connection: local
+  gather_facts: no
+  tasks:
+    - name: remove any previous directory
+      file: path={{ build_directory }} state=absent
+    - name: create new temporary directory
+      file: path={{ build_directory }} state=directory

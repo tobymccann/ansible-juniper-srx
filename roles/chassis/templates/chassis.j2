@@ -1,0 +1,13 @@
+{# CHASSIS #}
+{% if chassis is defined %}
+chassis {
+    redundancy {
+        {{ chassis.redundancy.type }};
+    }
+    aggregated-devices {
+        {{ chassis.redundancy.aggregatedMethod }} {
+            device-count {{ chassis.redundancy.aggregatedCount }};
+        }
+    }
+}
+{% endif %}

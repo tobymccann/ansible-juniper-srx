@@ -1,0 +1,11 @@
+{# APPLICATIONS #}
+{% if applications is defined %}
+applications {
+{% for each in applications %}
+    application {{ each.name }} {
+        protocol {{ each.protocol }};
+        destination-port {{ each.destination_port }};
+    }
+{% endfor %}
+}
+{% endif %}

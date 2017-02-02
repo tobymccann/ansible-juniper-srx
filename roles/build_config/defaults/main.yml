@@ -1,0 +1,5 @@
+temporaryDirectory: /tmp/ansible/
+build_directory: "{{ temporaryDirectory }}/{{ inventory_hostname }}/tmp"
+junos_configuration_directory: config
+junos_configuration_file: "{{ inventory_hostname }}.conf"
+junos_configuration: "{{ junos_configuration_directory }}/{{ junos_configuration_file }}"

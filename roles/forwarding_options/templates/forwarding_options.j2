@@ -1,0 +1,14 @@
+{# FORWARDING OPTIONS #}
+{% if forwarding_options is defined %}
+forwarding-options {
+{% if forwarding_options.stormControlProfiles is defined %}
+{% for profile in forwarding_options.stormControlProfiles %}
+    storm-control-profiles {{ profile.name }} {
+{% for each in profile.options %}
+        {{ each }};
+{% endfor %}
+    }
+{% endfor %}
+{% endif %}
+}
+{% endif %}

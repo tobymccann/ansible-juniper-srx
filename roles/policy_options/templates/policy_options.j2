@@ -1,0 +1,30 @@
+{# POLICY-OPTIONS #}
+{% if policy_options is defined %}
+policy-options {
+{% for statement in policy_options.policy %}
+    policy-statement {{ statement.name }} {
+{% for term in statement.term %}
+        term {{ term.number }} {
+{% if term.from is defined %}
+            from {
+{% for match in term.from %}
+                {{ match }};
+{% endfor %}
+            }
+{% endif %}
+{% if term.then is defined %}
+            then {
+                {{ term.then }};
+            }
+{% endif %}
+        }
+{% endfor %}
+    }
+{% endfor %}
+{% if policy_options.community is defined %}
+{% for community in policy_options.community %}
+    community {{ community.name }} members target:{{ community.target }};
+{% endfor %}
+{% endif %}
+}
+{% endif %}

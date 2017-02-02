@@ -1,0 +1,5 @@
+---
+- name: building virtual-chassis configuration
+  template: >
+    src=virtual_chassis.j2
+    dest={{ build_directory }}/10virtual_chassis.conf.part

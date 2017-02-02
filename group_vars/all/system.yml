@@ -1,0 +1,84 @@
+system:
+  domain_name: home.lab
+  domain_search: home.lab
+  time_zone: America/Chicago
+  arp_aging_timer: 5
+  auth_order: '[ radius password ]'
+  root_encrypted_password: 'please_enter_encrypted_password_here'
+  name_server:
+    - 192.168.1.11
+    - 192.168.1.12
+    - 8.8.8.8
+  radius_server:
+    - ip_address: 192.168.1.11
+      secret: 'please_enter_encrypted_password_here'
+    - ip_address: 192.168.1.12
+      secret: 'please_enter_encrypted_password_here'
+  accounting:
+    events: '[ change-log interactive-commands ]'
+    destination:
+      - type: radius
+        server: 192.168.1.11
+        secret: please_enter_encrypted_password_here
+  login:
+    message: '==================================================================\n==================================================================\n===             WELCOME TO OUR SRX               ===\n=================================================================='
+    class:
+      - name: SUPER_USER
+        idleTimeout: 5
+        permissions: all
+    user:
+      - name: ansible
+        uid: 2101
+        encrypted_password: 'please_enter_encrypted_password_here'
+        permissions: super-user
+      - name: firewall_guru
+        uid: 2102
+        encrypted_password: 'please_enter_encrypted_password_here'
+        permissions: SUPER_USER
+  password_requirements: minimum-length 8
+  services:
+    ftp: True
+    ssh:
+      - max-sessions-per-connection 32
+    netconf: True
+    rest:
+      http:
+        port: 8080
+      options:
+        - enable-explorer
+    web_management:
+      http:
+        interface: '[ ge-0/0/1.0 ge-0/0/2.0 ge-0/0/3.0 ge-0/0/4.0 ge-0/0/5.0 ge-0/0/0.0 ]'
+      https:
+        interface: '[ ge-0/0/1.0 ge-0/0/2.0 ge-0/0/3.0 ge-0/0/4.0 ge-0/0/5.0 ge-0/0/0.0 ]'
+        port: 443
+        certificate: RESTAPI
+
+  syslog:
+    archive_config: archive size 10m files 10
+    user:
+      - name: '*'
+        facility: any
+        severity: emergency
+    host:
+      - ip_address: 192.168.1.41
+        facility: any
+        severity: any
+        source_address: 192.168.1.1
+    file:
+      - file_name: messages
+        facility: any
+        severity: notice
+        authorization: info
+        priority: explicit-priority
+      - file_name: default-log-messages
+        facility: any
+        severity: info
+        options:
+          - structured-data
+          - match "(requested 'commit' operation)|(copying configuration to juniper.save)|(commit complete)|ifAdminStatus|(FRU power)|(FRU removal)|(FRU insertion)|(link UP)|transitioned|Transferred|transfer-file|(license add)|(license delete)|(package -X update)|(package -X delete)|(FRU Online)|(FRU Offline)|(plugged in)|(unplugged)|GRES"
+  ntp:
+    bootserver: 192.168.11.1
+    server:
+      - ip_address: 192.168.11.1 prefer
+      - ip_address: 192.168.11.2

@@ -1,0 +1,232 @@
+security:
+  log:
+    mode: stream
+    format: sd-syslog
+    source_address: 192.168.1.1
+    stream:
+      name: SYSLOG-SERVER
+      host: 192.168.1.41
+      port: 514
+  certificates:
+    local:
+      - cert_name: RESTAPI
+        payload: please_enter_encrypted_password_here
+  screen:
+    name: untrust-screen
+    icmp:
+      - ping-death
+    ip:
+      - source-route-option
+      - tear-drop
+    tcp:
+      - name: syn-flood
+        options:
+          - alarm-threshold 1024
+          - attack-threshold 200
+          - source-threshold 1024
+          - destination-threshold 2048
+          - timeout 20
+      - name: land
+  nat:
+    source:
+      - rule_name: trust-to-untrust
+        from_zone: trust
+        to_zone: untrust
+        nat_rule:
+          - name: source-nat-rule
+            match:
+              - source-address 192.168.1.0/24
+              - destination-address 0.0.0.0/0
+            then:
+              - nat_type: source-nat
+                options:
+                  - interface
+    destination:
+      pool:
+        - pool_name: ad-server1
+          address: 192.168.11.1/32
+          port: 3389
+        - pool_name: ad-server2
+          address: 192.168.11.2/32
+          port: 3389
+        - pool_name: microsoft-PC1
+          address: 192.168.1.13/32
+          port: 3389
+        - pool_name: vmware-host1
+          address: 192.168.10.1/32
+          port: 22
+        - pool_name: vmware-host2
+          address: 192.168.10.2/32
+          port: 22
+        - pool_name: ubuntu-pi-1
+          address: 192.168.101.2/32
+          port: 22
+        - pool_name: ubuntu-virl-1
+          address: 192.168.100.16/32
+          port: 1194
+      rule_set:
+        name: OUTSIDE-INSIDE
+        from_zone: untrust
+        nat_rule:
+          - name: ubuntu-pi-1-SSH
+            match:
+              source_address: 0.0.0.0/0
+              destination_address: 0.0.0.0/0
+              destination_port: 50022
+            then:
+              nat_type: pool
+              pool_name: ubuntu-pi-1
+          - name: vmware-host1-SSH
+            match:
+              destination_address: 0.0.0.0/0
+              destination_port: 50122
+            then:
+              nat_type: pool
+              pool_name: vmware-host1
+          - name: vmware-host2-SSH
+            match:
+              destination_address: 0.0.0.0/0
+              destination_port: 50222
+            then:
+              nat_type: pool
+              pool_name: vmware-host2
+          - name: ad-server1-RDP
+            match:
+              destination_address: 0.0.0.0/0
+              destination_port: 50111
+            then:
+              nat_type: pool
+              pool_name: ad-server1
+          - name: ad-server2-RDP
+            match:
+              destination_address: 0.0.0.0/0
+              destination_port: 50112
+            then:
+              nat_type: pool
+              pool_name: ad-server2
+          - name: microsoft-PC1-RDP
+            match:
+              destination_address: 0.0.0.0/0
+              destination_port: 50013
+            then:
+              nat_type: pool
+              pool_name: microsoft-PC1
+          - name: ubuntu-virl-1-VPN
+            match:
+              destination_address: 0.0.0.0/0
+              destination_port: 1194
+            then:
+              nat_type: pool
+              pool_name: ubuntu-virl-1
+  policies:
+    - from_zone: trust
+      to_zone: trust
+      policy_name:
+        - name: INTRA-ZONE-TRAFFIC
+          match:
+            source_address: any
+            destination_address: any
+            application: any
+          then:
+            - permit
+            - count
+    - from_zone: trust
+      to_zone: untrust
+      policy_name:
+        - name: trust-to-untrust
+          match:
+            source_address: any
+            destination_address: any
+            application: any
+          then:
+            - permit
+    - from_zone: untrust
+      to_zone: trust
+      policy_name:
+        - name: UNTRUST-TO-TRUST
+          match:
+            source_address: JUMPSERVER.COM
+            destination_address: '[ ubuntu-pi-1 vmware-host1 vmware-host2 ]'
+            application: junos-ssh
+          then:
+            - permit
+            - count
+        - name: microsoft-PC1-RDP
+          match:
+            source_address: any
+            destination_address: '[ microsoft-PC1 ad-server1 ad-server2 ]'
+            application: microsoft-RDP
+          then:
+            - permit
+            - count
+        - name: ubuntu-virl-1-VPN
+          match:
+            source_address: any
+            destination_address: '[ ubuntu-virl-1 ]'
+            application: virl-VPN
+          then:
+            - permit
+            - count
+    - from_zone: untrust
+      to_zone: junos-host
+      policy_name:
+        - name: juniper-srx-1-MGMT
+          match:
+            source_address: JUMPSERVER.COM
+            destination_address: any
+            application: any
+          then:
+            - permit
+        - name: DENY-ALL
+          match:
+            source_address: any
+            destination_address: any
+            application: any
+          then:
+            - deny
+            - count
+  zones:
+    security_zone:
+      - name: trust
+        address_book:
+          - hostname: vmware-host1
+            address: 192.168.10.1/32
+          - hostname: vmware-host2
+            address: 192.168.10.2/32
+          - hostname: ad-server1
+            address: 192.168.11.1/32
+          - hostname: ad-server2
+            address: 192.168.11.2/32
+          - hostname: juniper-space1
+            address: 192.168.11.21/32
+          - hostname: juniper-space1UI
+            address: 192.168.11.22/32
+          - hostname: ubuntu-pi-1
+            address: 192.168.101.2/32
+          - hostname: ubuntu-virl-1
+            address: 192.168.100.16/32
+          - hostname: microsoft-PC1
+            address: 192.168.1.13/32
+        host_inbound_traffic:
+          system_services:
+            - all
+          protocols:
+            - all
+        interfaces:
+          - ge-0/0/1.0
+          - ge-0/0/2.0
+          - ge-0/0/3.0
+          - ge-0/0/4.0
+          - ge-0/0/5.0
+      - name: untrust
+        address_book:
+          - hostname: JUMPSERVER.COM
+            address: 172.192.158.2/32
+            description: external jump server
+        screen: untrust-screen
+        host_inbound_traffic:
+          system_services:
+            - ssh
+            - dhcp
+        interfaces:
+          - ge-0/0/0.0

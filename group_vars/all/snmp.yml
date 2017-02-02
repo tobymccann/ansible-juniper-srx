@@ -1,0 +1,24 @@
+snmp:
+  name: srx-firewall
+  location: home_lab
+  contact: ansible_guru
+  community:
+    - string: public
+      authorization: read-write
+      clients:
+        - 192.168.1.21/32
+  trap_options:
+    - source-address 192.168.1.1
+  trap_group:
+    - name: home_lab
+      version: v2
+      port: 162
+      categories:
+        - chassis
+        - routing
+        - authentication
+        - link
+        - startup
+        - services
+      targets:
+        - 192.168.1.21

@@ -1,0 +1,8 @@
+policy_options:
+  policy:
+    - name: REDISTRIBUTE-DIRECT
+      term:
+        - number: 10
+          from:
+            - protocol direct
+          then: accept

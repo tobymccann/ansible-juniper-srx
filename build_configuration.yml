@@ -1,0 +1,21 @@
+---
+- include: build_directories.yml
+- name: create configuraitons for leaf devices
+  hosts: all
+  connection: local
+  gather_facts: no
+  roles:
+    - system
+    - chassis
+    - security
+    - interfaces
+    - snmp
+    - forwarding_options
+    - routing_options
+    - protocols
+    - policy_options
+    - routingInstances
+    - virtual_chassis
+    - vlans
+    - applications
+    - build_config

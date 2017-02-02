@@ -1,0 +1,226 @@
+{#  SYSTEM #}
+system {
+    host-name {{ hostname }};
+{% if system.domain_name is defined %}
+    domain-name {{ system.domain_name }};
+{% endif %}
+{% if system.domain_search is defined %}
+    domain-search {{ system.domain_search }};
+{% endif %}
+{% if system.time_zone is defined %}
+    time-zone {{ system.time_zone }};
+{% endif %}
+{% if system.arp_aging_time is defined %}
+    arp {
+        aging-timer {{ system.arp_aging_timer }};
+    }
+{% endif %}
+{% if system.auth_order is defined %}
+    authentication-order {{ system.auth_order }};
+{% endif %}
+    root-authentication {
+        encrypted-password "{{ system.root_encrypted_password }}";
+    }
+{% if system.name_server is defined %}
+    name-server {
+{% for server in system.name_server %}
+        {{ server }};
+{% endfor %}
+    }
+{% endif %}
+{% if system.tacplus_server is defined %}
+    tacplus-server {
+{% for server in system.tacplus_server %}
+        {{ server.ip_address }} {
+            timeout {{ server.timeout }};
+            source-address {{ server.source_address }};
+        }
+{% endfor %}
+    }
+{% endif %}
+{% if system.tacplusOptions is defined %}
+    tacplus-options {
+{% for option in system.tacplusOptions %}
+        {{ option }};
+{% endfor %}
+    }
+{% endif %}
+{% if system.radius_server is defined %}
+    radius-server {
+{% for server in system.radius_server %}
+        {{ server.ip_address }} secret "{{ server.secret }}";
+{% endfor %}
+    }
+{% endif %}
+    accounting {
+{% if system.accounting.events is defined %}
+        events {{ system.accounting.events }};
+        destination {
+{% for destination in system.accounting.destination %}
+            {{ destination.type }} {
+                server {
+                    {{ destination.server }} secret "{{ destination.secret }}";
+                }
+            }
+{% endfor %}
+        }
+{% endif %}
+{% if system.tacplus_server is defined %}
+        destination {
+            tacplus {
+                server {
+{% for server in system.tacplus_server %}
+                    {{ server.ip_address }} {
+                        timeout {{ server.timeout }};
+                        source-address {{ server.source_address }};
+                    }
+{% endfor %}
+                }
+            }
+        }
+{% endif %}
+    }
+    login {
+{% if system.login.message is defined %}
+        message "{{ system.login.message }}";
+{% endif %}
+{% for class in system.login.class %}
+        class {{ class.name }} {
+            idle-timeout {{ class.idleTimeout }};
+            permissions {{ class.permissions }};
+        }
+{% endfor %}
+{% for user in system.login.user %}
+        user {{ user.name }} {
+            uid {{ user.uid }};
+            class {{ user.permissions }};
+            authentication {
+                encrypted-password "{{ user.encrypted_password }}";
+            }
+        }
+{% endfor %}
+{% if system.password_requirements is defined %}
+        password {
+            {{ system.password_requirements }};
+{% endif %}
+        }
+    }
+{% if system.services is defined %}
+    services {
+{% if system.services.ftp is defined %}
+        ftp;
+{% endif %}
+{% if system.services.ssh is defined %}
+        ssh {
+{% for option in system.services.ssh %}
+            {{ option }};
+{% endfor %}
+        }
+{% endif %}
+{% if system.services.netconf is defined %}
+        netconf {
+            ssh;
+        }
+{% endif %}
+{% if system.services.rest is defined %}
+        rest {
+{% if system.services.rest.http is defined %}
+            http {
+{% if system.services.rest.http.port is defined %}
+                port {{ system.services.rest.http.port }};
+{% endif %}
+            }
+{% if system.services.rest.options is defined %}
+{% for option in system.services.rest.options %}
+            {{ option }};
+{% endfor %}
+{% endif %}
+{% endif %}
+        }
+{% endif %}
+{% if system.services.web_management is defined %}
+        web-management {
+{% if system.services.web_management.http is defined %}
+            http {
+{% if system.services.web_management.http.interface is defined %}
+                interface {{ system.services.web_management.http.interface }};
+{% endif %}
+            }
+{% endif %}
+{% if system.services.web_management.https is defined %}
+            https {
+{% if system.services.web_management.https.port is defined %}
+                port {{ system.services.web_management.https.port }};
+{% endif %}
+{% if system.services.web_management.https.certificate is defined %}
+                local-certificate {{ system.services.web_management.https.certificate }};
+{% endif %}
+{% if system.services.web_management.https.interface is defined %}
+                interface {{ system.services.web_management.https.interface }};
+{% endif %}
+            }
+{% endif %}
+{% endif %}
+        }
+    }
+{% endif %}
+    syslog {
+{% if system.syslog.archive_config is defined %}
+        {{ system.syslog.archive_config }};
+{% endif %}
+{% for user in system.syslog.user %}
+        user {{ user.name }} {
+            {{ user.facility}} {{ user.severity }};
+        }
+{% endfor %}
+{% for host in system.syslog.host %}
+        host {{ host.ip_address }} {
+            {{ host.facility}} {{ host.severity }};
+            source-address {{ host.source_address }};
+        }
+{% endfor %}
+{% for file in system.syslog.file %}
+        file {{ file.file_name }} {
+{% if file.facility is defined %}
+            {{ file.facility}} {{ file.severity }};
+{% endif %}
+{% if file.authorization is defined %}
+            authorization {{ file.authorization }};
+{% endif %}
+{% if file.interactiveCommands is defined %}
+            interactive-commands {{ file.interactiveCommands }};
+{% endif %}
+{% if file.priority is defined %}
+            {{ file.priority }};
+{% endif %}
+{% if file.options is defined %}
+{% for option in file.options %}
+            {{ option }};
+{% endfor %}
+{% endif %}
+        }
+{% endfor %}
+    }
+    commit synchronize;
+    max-configurations-on-flash 49;
+    max-configuration-rollbacks 49;
+    license {
+        autoupdate {
+            url https://ae1.juniper.net/junos/key_retrieval;
+        }
+    }
+{% if system.ntp is defined %}
+    ntp {
+{% if system.ntp.bootserver is defined %}
+        boot-server {{ system.ntp.bootserver }};
+{% endif %}
+{% for server in system.ntp.server %}
+{% if server.key is defined %}
+        server {{ server.ip_address }} key {{ server.key }};
+{% else %}
+        server {{ server.ip_address }};
+{% endif %}
+{% endfor %}
+    }
+{% endif %}
+}

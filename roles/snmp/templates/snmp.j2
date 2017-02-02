@@ -1,0 +1,57 @@
+{# SNMP #}
+{% if snmp is defined %}
+snmp {
+{% if snmp.name is defined %}
+    name {{ snmp.name }};
+{% endif %}
+{% if snmp.location is defined %}
+    location {{ snmp.location }};
+{% endif %}
+{% if snmp.contact is defined %}
+    contact "{{ snmp.contact }}";
+{% endif %}
+{% for community in snmp.community %}
+    community "{{ community.string }}" {
+{% if community.authorization is defined %}
+        authorization {{ community.authorization }};
+{% endif %}
+{% if community.clients is defined %}
+        clients {
+{% for client in community.clients %}
+            {{ client }};
+{% endfor %}
+        }
+{% endif %}
+    }
+{% if snmp.trap_options is defined %}
+    trap-options {
+{% for option in snmp.trap_options %}
+        {{ option }};
+{% endfor %}
+    }
+{% endif %}
+{% if snmp.trap_group is defined %}
+{% for group in snmp.trap_group %}
+    trap-group {{ group.name }} {
+        version {{ group.version }};
+        destination-port {{ group.port }};
+{% if group.categories is defined %}
+        categories {
+{% for category in group.categories %}
+            {{ category }};
+{% endfor %}
+        }
+{% endif %}
+{% if group.targets is defined %}
+        targets {
+{% for target in group.targets %}
+            {{ target }};
+{% endfor %}
+        }
+{% endif %}
+    }
+{% endfor %}
+{% endif %}
+{% endfor %}
+}
+{% endif %}

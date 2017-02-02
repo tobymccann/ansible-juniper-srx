@@ -1,0 +1,53 @@
+{# PROTOCOLS #}
+protocols {
+{% if protocols.lldp is defined %}
+    lldp {
+{% if protocols.lldp.options is defined %}
+{% for option in protocols.lldp.options %}
+        {{ option }};
+{% endfor %}
+{% endif %}
+{% if protocols.lldp.interface is defined %}
+{% for interface in protocols.lldp.interface %}
+        interface {{ interface }};
+{% endfor %}
+{% endif %}
+    }
+{% endif %}
+{% if protocols.stp is defined %}
+{% for protocol in protocols.stp %}
+    {{ protocol.type }} {
+{% for iface in protocol.interface %}
+        interface {{ iface.name }} {
+            {{ iface.mode }};
+        }
+{% endfor %}
+    }
+{% endfor %}
+{% endif %}
+{% if protocols.ospf is defined %}
+    ospf {
+{% if protocols.ospf.options is defined %}
+{% for option in protocols.ospf.options %}
+        {{ option }};
+{% endfor %}
+{% endif %}
+{% if protocols.ospf.export is defined %}
+        export {{ protocols.ospf.export }};
+{% endif %}
+{% for area in protocols.ospf.area %}
+        area {{ area.area }} {
+{% for interface in area.interface %}
+{% if interface.type is defined %}
+            interface {{ interface.iface }} {
+                interface-type {{ interface.type }};
+            }
+{% else %}
+            interface {{ interface.iface }};
+{% endif %}
+{% endfor %}
+        }
+{% endfor %}
+    }
+{% endif %}
+}

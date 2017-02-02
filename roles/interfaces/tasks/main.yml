@@ -1,0 +1,5 @@
+---
+- name: building interfaces configuration
+  template: >
+    src=interfaces.j2
+    dest={{ build_directory }}/04interfaces.conf.part

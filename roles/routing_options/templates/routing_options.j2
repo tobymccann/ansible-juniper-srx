@@ -1,0 +1,25 @@
+{# ROUTING OPTIONS #}
+{% if routing_options is defined %}
+routing-options {
+{% if routing_options.nonstop_routing == True %}
+    nonstop-routing;
+{% endif %}
+{% if routing_options.router_id is defined %}
+    router-id {{ routing_options.router_id }};
+{% endif %}
+{% if routing_options.static is defined %}
+    static {
+{% for route in routing_options.static %}
+        route {{ route }};
+{% endfor %}
+    }
+{% endif %}
+{% if routing_options.forwardingTable is defined %}
+    forwarding-table {
+{% for policy in routing_options.forwardingTable %}
+        export {{ policy }};
+{% endfor %}
+    }
+{% endif %}
+{% endif %}
+}

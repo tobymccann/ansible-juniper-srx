@@ -1,0 +1,240 @@
+{% if security is defined %}
+security {
+{# SECURITY LOGGING #}
+{% if security.log is defined %}
+    log {
+{% if security.log.mode is defined %}
+        mode {{ security.log.mode }};
+{% endif %}
+{% if security.log.format is defined %}
+        format {{ security.log.format }};
+{% endif %}
+{% if security.log.source_address is defined %}
+        source-address {{ security.log.source_address }};
+{% endif %}
+{% if security.log.stream is defined %}
+        stream {{ security.log.stream.name }} {
+            host {
+                {{ security.log.stream.host }};
+                port {{ security.log.stream.port }};
+            }
+        }
+{% endif %}
+    }
+{% endif %}
+{# SECURITY CERTFICATES #}
+{% if security.certificates is defined %}
+    certificates {
+{% if security.certificates.local is defined %}
+        local {
+{% for certificate in security.certificates.local %}
+            {{ certificate.cert_name }} {
+                "{{ certificate.payload|e }}";
+            }
+{% endfor %}
+        }
+{% endif %}
+    }
+{% endif %}
+{# IDS POLICY #}
+{% if security.screen is defined %}
+    screen {
+        ids-option {{ security.screen.name }} {
+{% if security.screen.icmp is defined %}
+            icmp {
+{% for option in security.screen.icmp %}
+                {{ option }};
+{% endfor %}
+            }
+{% endif %}
+{% if security.screen.ip is defined %}
+            ip {
+{% for option in security.screen.ip %}
+                {{ option }};
+{% endfor %}
+            }
+{% endif %}
+{% if security.screen.tcp is defined %}
+            tcp {
+{% for each in security.screen.tcp %}
+{% if each.options is defined %}
+                {{ each.name }} {
+{% for option in each.options %}
+                    {{ option }};
+{% endfor %}
+                }
+{% else %}
+                {{ each.name }};
+{% endif %}
+{% endfor %}
+            }
+{% endif %}
+        }
+    }
+{% endif %}
+{# NAT POLICY #}
+{# SOURCE NAT #}
+{% if security.nat is defined %}
+    nat {
+{% if security.nat.source is defined %}
+        source {
+{% for rule_set in security.nat.source %}
+            rule-set {{ rule_set.rule_name }} {
+{% if rule_set.from_zone is defined %}
+                from zone {{ rule_set.from_zone }};
+{% endif %}
+{% if rule_set.to_zone is defined %}
+                to zone {{ rule_set.to_zone }};
+{% endif %}
+{% if rule_set.nat_rule is defined %}
+{% for rule in rule_set.nat_rule %}
+                rule {{ rule.name }} {
+                    match {
+{% for option in rule.match %}
+                        {{ option }};
+{% endfor %}
+                    }
+                    then {
+{% for option in rule.then %}
+                        {{ option.nat_type }} {
+{% for nat_option in option.options %}
+                            {{ nat_option }};
+{% endfor %}
+                        }
+{% endfor %}
+                    }
+                }
+{% endfor %}
+{% endif %}
+            }
+{% endfor %}
+        }
+{% endif %}
+{# NAT POLICY #}
+{# DESTINATION NAT #}
+{% if security.nat.destination is defined %}
+        destination {
+{% if security.nat.destination.pool is defined %}
+{% for pool in security.nat.destination.pool %}
+            pool {{ pool.pool_name }} {
+                address {{ pool.address }} port {{ pool.port }};
+            }
+{% endfor %}
+{% if security.nat.destination.rule_set is defined %}
+            rule-set {{ security.nat.destination.rule_set.name }} {
+{% if security.nat.destination.rule_set.from_zone is defined %}
+                from zone {{ security.nat.destination.rule_set.from_zone }};
+{% for rule in security.nat.destination.rule_set.nat_rule %}
+                rule {{ rule.name }} {
+                    match {
+{% if rule.match.source_address is defined %}
+                        source-address {{ rule.match.source_address }};
+{% endif %}
+{% if rule.match.destination_address is defined %}
+                        destination-address {{ rule.match.destination_address }};
+{% endif %}
+{% if rule.match.destination_port is defined %}
+                        destination-port {
+                            {{ rule.match.destination_port }};
+                        }
+{% endif %}
+                    }
+                    then {
+                        destination-nat {
+                            {{ rule.then.nat_type }} {
+                                {{ rule.then.pool_name }};
+                            }
+                        }
+                    }
+                }
+{% endfor %}
+{% endif %}
+            }
+{% endif %}
+{% endif %}
+        }
+{% endif %}
+    }
+{% endif %}
+{# SECURITY POLICIES #}
+{% if security.policies is defined %}
+    policies {
+{% for policy in security.policies %}
+        from-zone {{ policy.from_zone }} to-zone {{ policy.to_zone }} {
+{% for statement in policy.policy_name %}
+            policy {{ statement.name }} {
+                match {
+{% if statement.match.source_address is defined %}
+                    source-address {{ statement.match.source_address }};
+{% endif %}
+{% if statement.match.destination_address is defined %}
+                    destination-address {{ statement.match.destination_address }};
+{% endif %}
+{% if statement.match.application is defined %}
+                    application {{ statement.match.application }};
+{% endif %}
+                }
+                then {
+{% for each in statement.then %}
+                    {{ each }};
+{% endfor %}
+                }
+            }
+{% endfor %}
+        }
+{% endfor %}
+    }
+{% endif %}
+{# SECURITY ZONES #}
+{% if security.zones is defined %}
+    zones {
+{% for zone in security.zones.security_zone %}
+        security-zone {{ zone.name }} {
+{% if zone.address_book is defined %}
+            address-book {
+{% for entry in zone.address_book %}
+{% if entry.description is defined %}
+                address {{ entry.hostname }} {
+                    description "{{ entry.description }}";
+                    {{ entry.address }};
+                }
+{% else %}
+                address {{ entry.hostname }} {{ entry.address }};
+{% endif %}
+{% endfor %}
+            }
+{% endif %}
+{% if zone.screen is defined %}
+            screen {{ zone.screen }};
+{% endif %}
+{% if zone.host_inbound_traffic is defined %}
+            host-inbound-traffic {
+{% if zone.host_inbound_traffic.system_services is defined %}
+                system-services {
+{% for option in zone.host_inbound_traffic.system_services %}
+                    {{ option }};
+{% endfor %}
+                }
+{% endif %}
+{% if zone.host_inbound_traffic.protocols is defined %}
+                protocols {
+{% for option in zone.host_inbound_traffic.system_services %}
+                    {{ option }};
+{% endfor %}
+                }
+{% endif %}
+            }
+{% endif %}
+{% if zone.interfaces is defined %}
+            interfaces {
+{% for interface in zone.interfaces %}
+                {{ interface }};
+{% endfor %}
+            }
+{% endif %}
+        }
+{% endfor %}
+    }
+{% endif %}
+}
+{% endif %}

@@ -1,0 +1,7 @@
+---
+- name: check if directory is present
+  file: path={{ junos_configuration_directory }} state=directory
+  run_once: true
+
+- name: assemble configurations and copy to junos_configuration
+  assemble: src={{ build_directory }} dest={{ junos_configuration }}
